@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # local
-    'homework_7.apps.Homework7Config'
+    'homework_7.apps.Homework7Config',
+    'homework_8.apps.Homework8Config'
 ]
 
 MIDDLEWARE = [
