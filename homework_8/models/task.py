@@ -1,13 +1,6 @@
 from django.db import models
 from homework_8.models.validators import validate_future_date
-
-CATEGORIES = [
-    ("New", "New"),
-    ("In progress", "In progress"),
-    ("Pending", "Pending"),
-    ("Blocked", "Blocked"),
-    ("Done", "Done")
-]
+from homework_8.models.statuses import STATUSES
 
 
 class Task(models.Model):
@@ -17,9 +10,15 @@ class Task(models.Model):
     )
     description = models.TextField()
     categories = models.ManyToManyField('Category')
-    status = models.CharField(max_length=20, choices=CATEGORIES, default="New")
+    status = models.CharField(max_length=20, choices=STATUSES, default="New")
     deadline = models.DateTimeField(validators=[validate_future_date])
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
+
+    class Meta:
+        db_table = 'task_manager_task'
+        ordering = ('-created_at',)
+        verbose_name = 'Task'
+        unique_together = ('title',)
