@@ -39,6 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    # 3rd-party
+    'rest_framework',
+
     # local
     'homework_7.apps.Homework7Config',
     'homework_8.apps.Homework8Config'
