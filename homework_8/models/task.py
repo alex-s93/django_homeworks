@@ -11,7 +11,8 @@ class Task(models.Model):
     description = models.TextField()
     categories = models.ManyToManyField('Category')
     status = models.CharField(max_length=20, choices=STATUSES, default="New")
-    deadline = models.DateTimeField(validators=[validate_future_date])
+    deadline = models.DateTimeField()
+    # deadline = models.DateTimeField(validators=[validate_future_date])
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

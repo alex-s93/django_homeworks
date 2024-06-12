@@ -1,11 +1,16 @@
+from django.shortcuts import get_object_or_404
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
+from rest_framework.views import APIView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q, F, Min, Max, Avg, Count
-from homework_8.models import Task
-from homework_8.serializers.tasks import TaskCreateSerializer, TasksStatusDeadlineSerializer, AllTasksSerializer
+from homework_8.models import Task, Subtask, Category
+from homework_8.serializers.categories import CategoryCreateSerializer
+from homework_8.serializers.tasks import TaskCreateSerializer, TasksStatusDeadlineSerializer, AllTasksSerializer, \
+    TaskDetailSerializer
+from homework_8.serializers.subtasks import SubTaskSerializer, SubtaskCreateSerializer
 from django.utils import timezone
 
 # Знаю что подобные вещи надо выносить в отдельный файл констант, но ради одного значения не захотел это делать :)
@@ -98,3 +103,88 @@ def get_tasks_stats(request: Request) -> Response:
         "tasks_stats_by_status": [{stats['status']: stats['count']} for stats in status_task_stats]
     }
     return Response(data=result, status=status.HTTP_200_OK)
+
+
+@api_view(['GET', ])
+def get_task_by_id(request: Request, task_id: int) -> Response:
+    task = Task.objects.get(pk=task_id)
+    if not task:
+        return Response(data=[], status=status.HTTP_204_NO_CONTENT)
+
+    serializer = TaskDetailSerializer(task)
+
+    return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+class CategoryListCreateView(APIView):
+    def post(self, request: Request) -> Response:
+        serializer = CategoryCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CategoryDetailUpdateDeleteView(APIView):
+    def put(self, request, category_id: int) -> Response:
+        category = get_object_or_404(Category, pk=category_id)
+
+        serializer = CategoryCreateSerializer(category, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+        return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SubTaskListCreateView(APIView):
+    def get(self, request: Request) -> Response:
+        subtasks = Subtask.objects.all()
+        if not subtasks:
+            return Response(data=[], status=status.HTTP_204_NO_CONTENT)
+
+        serializer = SubTaskSerializer(subtasks, many=True)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request: Request):
+        serializer = SubtaskCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SubTaskDetailUpdateDeleteView(APIView):
+
+    @staticmethod
+    def get_subtask(subtask_id: int) -> Subtask:
+        return get_object_or_404(Subtask, pk=subtask_id)
+
+    def get(self, request: Request, subtask_id: int) -> Response:
+        subtask = self.get_subtask(subtask_id)
+
+        serializer = SubTaskSerializer(subtask)
+
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request: Request, subtask_id: int) -> Response:
+        subtask = self.get_subtask(subtask_id)
+
+        serializer = SubTaskSerializer(subtask, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+        return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request: Request, subtask_id: int) -> Response:
+        subtask = self.get_subtask(subtask_id)
+
+        subtask.delete()
+
+        return Response(status=status.HTTP_200_OK)

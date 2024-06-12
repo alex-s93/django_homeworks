@@ -11,4 +11,8 @@ class Category(models.Model):
         db_table = 'task_manager_category'
         verbose_name = 'Category'
         verbose_name_plural = 'Categories'
-        unique_together = ('name',)
+        # NOTE: закомментил строку, чтобы проверить валидатор в сериализаторе, иначе выдавало сообщение об ошибке:
+        #       "non_field_errors": [
+        #         "The fields name must make a unique set."
+        #       ]
+        # unique_together = ('name',)
