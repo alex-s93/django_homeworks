@@ -1,12 +1,18 @@
+from rest_framework.decorators import api_view
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.decorators import api_view
+
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.db.models import Q, F, Min, Max, Avg, Count
-from homework_8.models import Task
-from homework_8.serializers.tasks import TaskCreateSerializer, TasksStatusDeadlineSerializer, AllTasksSerializer
+from django.db.models import Q, Count
 from django.utils import timezone
+
+from homework_8.models import Task
+from homework_8.serializers.tasks import (
+    TaskCreateSerializer,
+    TasksStatusDeadlineSerializer,
+    AllTasksSerializer
+)
 
 # Знаю что подобные вещи надо выносить в отдельный файл констант, но ради одного значения не захотел это делать :)
 PER_PAGE = 5
