@@ -116,9 +116,7 @@ def get_tasks_stats(request: Request) -> Response:
 
 @api_view(['GET', ])
 def get_task_by_id(request: Request, task_id: int) -> Response:
-    task = Task.objects.get(pk=task_id)
-    if not task:
-        return Response(data=[], status=status.HTTP_204_NO_CONTENT)
+    task = get_object_or_404(Task, pk=task_id)
 
     serializer = TaskDetailSerializer(task)
 
@@ -152,7 +150,7 @@ class CategoryDetailUpdateDeleteView(APIView):
 class SubTaskListCreateView(APIView):
     def get(self, request: Request) -> Response:
         subtasks = Subtask.objects.all()
-        if not subtasks:
+        if not subtasks.exists():
             return Response(data=[], status=status.HTTP_204_NO_CONTENT)
 
         serializer = SubTaskSerializer(subtasks, many=True)
@@ -196,4 +194,8 @@ class SubTaskDetailUpdateDeleteView(APIView):
 
         subtask.delete()
 
-        return Response(status=status.HTTP_200_OK)
+        delete_msg = {
+            "message": f"Subtask with ID[{subtask_id}] was successfully deleted"
+        }
+
+        return Response(data=delete_msg, status=status.HTTP_200_OK)
