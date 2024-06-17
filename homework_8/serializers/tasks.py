@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.utils import timezone
 
 from homework_8.models import Task
+from homework_8.serializers.categories import CategoryCreateSerializer
 from homework_8.serializers.subtasks import SubTaskSerializer
 
 
@@ -9,14 +10,21 @@ class TaskCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = ('title', 'description', 'status', 'deadline')
+        read_only_fields = ('created_at',)
 
     def validate_deadline(self, value):
         if value <= timezone.now():
             raise serializers.ValidationError('Deadline must be in the future')
         return value
 
+    # TODO: remove it after debug will be completed
+    def validate_created_at(self, value):
+        return value
+
 
 class AllTasksSerializer(serializers.ModelSerializer):
+    categories = CategoryCreateSerializer(many=True, read_only=True)
+
     class Meta:
         model = Task
         fields = "__all__"
