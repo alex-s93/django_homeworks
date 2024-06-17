@@ -41,6 +41,7 @@ INSTALLED_APPS = [
 
     # 3rd-party
     'rest_framework',
+    'django_filters',
 
     # local
     'homework_7.apps.Homework7Config',
