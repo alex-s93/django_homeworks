@@ -15,7 +15,8 @@ class BaseTaskListCreateView(ListCreateAPIView):
     serializer_get = None
     serializer_post = None
 
-    pagination_class = AppBasePaginator
+    # NOTE: It's disabled cause the new general pagination was applied for whole project
+    # pagination_class = AppBasePaginator
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['status', 'deadline']   # Поля для фильтрации
     search_fields = ['title', 'description']    # Поля для поиска
