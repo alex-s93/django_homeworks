@@ -8,7 +8,7 @@ from homework_8.models import Category
 from homework_8.serializers.categories import CategoryCreateSerializer
 
 
-class CategoryListCreateView(APIView):
+class CategoryCreateView(APIView):
     def post(self, request: Request) -> Response:
         serializer = CategoryCreateSerializer(data=request.data)
         if serializer.is_valid():
@@ -19,7 +19,7 @@ class CategoryListCreateView(APIView):
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class CategoryDetailUpdateDeleteView(APIView):
+class CategoryUpdateView(APIView):
     def put(self, request, category_id: int) -> Response:
         category = get_object_or_404(Category, pk=category_id)
 
