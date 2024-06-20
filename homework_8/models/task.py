@@ -5,14 +5,12 @@ from homework_8.models.statuses import STATUSES
 
 class Task(models.Model):
     title = models.CharField(
-        max_length=75,
-        unique_for_date='created_at'
+        max_length=75
     )
     description = models.TextField()
-    categories = models.ManyToManyField('Category')
+    categories = models.ManyToManyField('Category', related_name='tasks')
     status = models.CharField(max_length=20, choices=STATUSES, default="New")
     deadline = models.DateTimeField()
-    # deadline = models.DateTimeField(validators=[validate_future_date])
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -22,4 +20,4 @@ class Task(models.Model):
         db_table = 'task_manager_task'
         ordering = ('-created_at',)
         verbose_name = 'Task'
-        unique_together = ('title',)
+        unique_together = ('title', 'created_at')
