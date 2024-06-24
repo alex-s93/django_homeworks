@@ -3,6 +3,11 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework import status
+from rest_framework.permissions import (
+    IsAuthenticatedOrReadOnly,
+    IsAdminUser,
+    SAFE_METHODS
+)
 
 from homework_8.models import Category
 from homework_8.serializers.categories import CategoryCreateSerializer
@@ -22,3 +27,12 @@ class CategoryViewSet(ModelViewSet):
             } for category in categories_w_tasks_count
         ]
         return Response(data=data, status=status.HTTP_200_OK)
+
+    # NOTE: В моем понимании, категории статичны в системе и должны менеджериться только админом
+    def get_permissions(self):
+        if self.request.method in SAFE_METHODS:
+            self.permission_classes = [IsAuthenticatedOrReadOnly]
+        else:
+            self.permission_classes = [IsAdminUser]
+
+        return super(CategoryViewSet, self).get_permissions()

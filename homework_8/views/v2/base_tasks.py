@@ -3,7 +3,13 @@ from rest_framework.generics import (
     RetrieveUpdateDestroyAPIView,
     get_object_or_404
 )
+from rest_framework.permissions import (
+    IsAuthenticatedOrReadOnly,
+    IsAuthenticated,
+    IsAdminUser
+)
 from rest_framework import filters
+
 from django_filters.rest_framework import DjangoFilterBackend
 
 from homework_8.models import Task, Subtask
@@ -22,6 +28,8 @@ class BaseTaskListCreateView(ListCreateAPIView):
     search_fields = ['title', 'description']    # Поля для поиска
     ordering_fields = ['created_at']            # Поля для сортировки
 
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
     def get_queryset(self):
         assert self.base_model is not None, (
                 "'%s' should include a `base_model` attribute."
@@ -31,12 +39,12 @@ class BaseTaskListCreateView(ListCreateAPIView):
 
     def get_serializer_class(self):
         assert self.serializer_get is not None, (
-                f"'{self.__class__.__name__}' should include a "
-                f"`serializer_get` attribute."
+            f"'{self.__class__.__name__}' should include a "
+            f"`serializer_get` attribute."
         )
         assert self.serializer_post is not None, (
-                f"'{self.__class__.__name__}' should include a "
-                f"`serializer_post` attribute."
+            f"'{self.__class__.__name__}' should include a "
+            f"`serializer_post` attribute."
         )
 
         if self.request.method == 'GET':
@@ -53,7 +61,7 @@ class BaseTaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         assert self.base_model is not None, (
-                f"'{self.__class__.__name__}' should include a `base_model` attribute."
+            f"'{self.__class__.__name__}' should include a `base_model` attribute."
         )
         return self.base_model.objects.all()
 
@@ -62,15 +70,22 @@ class BaseTaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
 
     def get_serializer_class(self):
         assert self.serializer_get is not None, (
-                f"'{self.__class__.__name__}' should include a "
-                f"`serializer_get` attribute."
+            f"'{self.__class__.__name__}' should include a "
+            f"`serializer_get` attribute."
         )
         assert self.serializer_put is not None, (
-                f"'{self.__class__.__name__}' should include a "
-                f"`serializer_put` attribute."
+            f"'{self.__class__.__name__}' should include a "
+            f"`serializer_put` attribute."
         )
 
         if self.request.method in ['PUT', 'PATCH']:
             return self.serializer_put
         else:
             return self.serializer_get
+
+    def get_permissions(self):
+        if self.request.method in ['GET', 'PUT', 'PATCH']:
+            self.permission_classes = [IsAuthenticated]
+        else:
+            self.permission_classes = [IsAdminUser]
+        return super(BaseTaskDetailUpdateDeleteView, self).get_permissions()
