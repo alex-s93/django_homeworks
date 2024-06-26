@@ -1,4 +1,6 @@
+from django.contrib.auth.models import User
 from django.db import models
+
 from homework_8.models import Task
 from homework_8.models.statuses import STATUSES
 from homework_8.models.validators import validate_future_date
@@ -11,6 +13,7 @@ class Subtask(models.Model):
     status = models.CharField(max_length=20, choices=STATUSES, default="New")
     deadline = models.DateTimeField(validators=[validate_future_date])
     created_at = models.DateTimeField(auto_now_add=True)
+    owner = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='subtasks', null=True)
 
     def __str__(self):
         return self.title

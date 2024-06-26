@@ -1,5 +1,6 @@
 from django.db import models
-from homework_8.models.validators import validate_future_date
+from django.contrib.auth.models import User
+
 from homework_8.models.statuses import STATUSES
 
 
@@ -12,6 +13,7 @@ class Task(models.Model):
     status = models.CharField(max_length=20, choices=STATUSES, default="New")
     deadline = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
+    owner = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='tasks', null=True)
 
     def __str__(self):
         return self.title
