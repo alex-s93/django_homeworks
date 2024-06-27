@@ -5,15 +5,13 @@ from rest_framework.generics import (
 )
 from rest_framework.permissions import (
     IsAuthenticatedOrReadOnly,
-    IsAuthenticated,
-    IsAdminUser
 )
 from rest_framework import filters
 
 from django_filters.rest_framework import DjangoFilterBackend
 
 from homework_8.models import Task, Subtask
-from homework_8.views.v2.paginator import AppBasePaginator
+from homework_8.permissions.owner_permission import IsOwnerOrAuthenticatedReadOnly
 
 
 class BaseTaskListCreateView(ListCreateAPIView):
@@ -53,11 +51,15 @@ class BaseTaskListCreateView(ListCreateAPIView):
         else:
             return self.serializer_post
 
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
 
 class BaseTaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     base_model: Task | Subtask = None
     serializer_get = None
     serializer_put = None
+    permission_classes = [IsOwnerOrAuthenticatedReadOnly]
 
     def get_queryset(self):
         assert self.base_model is not None, (
@@ -66,7 +68,10 @@ class BaseTaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
         return self.base_model.objects.all()
 
     def get_object(self):
-        return get_object_or_404(self.base_model, pk=self.kwargs['pk'])
+        obj = get_object_or_404(self.base_model, pk=self.kwargs['pk'])
+        # NOTE: Не знаю почему, но без этой проверки у меня не срабатывал кастомный пермишен
+        self.check_object_permissions(self.request, obj)
+        return obj
 
     def get_serializer_class(self):
         assert self.serializer_get is not None, (
@@ -82,10 +87,3 @@ class BaseTaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
             return self.serializer_put
         else:
             return self.serializer_get
-
-    def get_permissions(self):
-        if self.request.method in ['GET', 'PUT', 'PATCH']:
-            self.permission_classes = [IsAuthenticated]
-        else:
-            self.permission_classes = [IsAdminUser]
-        return super(BaseTaskDetailUpdateDeleteView, self).get_permissions()
